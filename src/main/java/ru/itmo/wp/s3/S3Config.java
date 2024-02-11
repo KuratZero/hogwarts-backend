@@ -12,7 +12,7 @@ import java.net.URI;
 @Configuration
 public class S3Config {
     @Value("${s3.iphost}")
-    private String IPHOST;
+    private String IP;
 
     @Value("${s3.region}")
     private String REGION;
@@ -20,12 +20,12 @@ public class S3Config {
     @Bean
     public S3Client getS3Client() {
         return S3Client.builder().region(Region.of(REGION))
-                .endpointOverride(URI.create(IPHOST)).build();
+                .endpointOverride(URI.create(IP)).build();
     }
 
     @Bean
     public S3Presigner getS3Presigner() {
         return S3Presigner.builder().region(Region.of(REGION))
-                .endpointOverride(URI.create(IPHOST)).build();
+                .endpointOverride(URI.create(IP)).build();
     }
 }

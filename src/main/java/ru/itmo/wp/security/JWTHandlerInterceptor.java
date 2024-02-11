@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
-import ru.itmo.wp.controller.JwtController;
-import ru.itmo.wp.domain.User;
 import ru.itmo.wp.security.annotations.JWTInterceptor;
 import ru.itmo.wp.service.JwtService;
 
@@ -28,22 +26,18 @@ public class JWTHandlerInterceptor implements HandlerInterceptor {
             return true;
         }
         Method method = ((HandlerMethod) handler).getMethod();
-        if(!method.isAnnotationPresent(JWTInterceptor.class)) {
+        if (!method.isAnnotationPresent(JWTInterceptor.class)) {
             return true;
         }
+
         String header = request.getHeader("Authorization");
-        if(header == null || header.length() < 8) {
+        if (header == null || header.length() < 8) {
             response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Not correct jwt.");
             return false;
         }
-        String jwt = header.substring(7);
-        User user = jwtService.find(jwt);
-        if(user == null) {
-            response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Not found user.");
-            return false;
-        } else {
-            request.setAttribute("_user-interception", user);
-            return true;
-        }
+
+        request.setAttribute("_user-interception",
+                jwtService.find(header.substring(7)));
+        return true;
     }
 }

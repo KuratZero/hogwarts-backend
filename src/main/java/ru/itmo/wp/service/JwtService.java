@@ -6,19 +6,20 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.itmo.wp.domain.User;
 
 @Service
 public class JwtService {
-    private static final String SECRET = "38c86b553adefeb3e579e39789e38664aef9176e";
-    private static final Algorithm algorithm = Algorithm.HMAC256(SECRET);
-    private static final JWTVerifier verifier = JWT.require(algorithm).build();
-
+    private final Algorithm algorithm;
+    private final JWTVerifier verifier;
     private final UserService userService;
 
-    public JwtService(UserService userService) {
+    public JwtService(UserService userService, @Value("@jwt.secret@") String secret) {
         this.userService = userService;
+        this.algorithm = Algorithm.HMAC256(secret);
+        this.verifier = JWT.require(algorithm).build();
     }
 
     public String create(User user) {
@@ -26,7 +27,7 @@ public class JwtService {
             return JWT.create()
                     .withClaim("userId", user.getId())
                     .sign(algorithm);
-        } catch (JWTCreationException exception){
+        } catch (JWTCreationException exception) {
             throw new RuntimeException("Can't create JWT.");
         }
     }
@@ -35,7 +36,7 @@ public class JwtService {
         try {
             DecodedJWT decodedJwt = verifier.verify(jwt);
             return userService.findById(decodedJwt.getClaim("userId").asLong());
-        } catch (JWTVerificationException exception){
+        } catch (JWTVerificationException exception) {
             return null;
         }
     }

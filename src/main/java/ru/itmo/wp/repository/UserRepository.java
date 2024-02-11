@@ -6,21 +6,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 import ru.itmo.wp.domain.User;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     @Transactional
     @Modifying
-    @Query(value = "UPDATE users SET password_sha=digest(concat('8960cfckfb313ass', ?2, ?3), 'sha256') WHERE id=?1", nativeQuery = true)
-    void updatePasswordSha(long id, String login, String password);
+    @Query(value = "UPDATE users SET password_sha=digest(concat(?4, ?2, ?3), ?5) WHERE id=?1", nativeQuery = true)
+    void updatePasswordSha(long id, String login, String password, String salt, String algorithm);
 
-    @Query(value = "SELECT * FROM users WHERE login=?1 AND password_sha=cast(digest(concat('8960cfckfb313ass', ?1, ?2), 'sha256') AS text)", nativeQuery = true)
-    User findByLoginAndPassword(String login, String password);
-
-    List<User> findAllByOrderByIdDesc();
-
-//    User findByLogin(String login);
+    @Query(value = "SELECT * FROM users WHERE login=?1 AND password_sha=cast(digest(concat(?3, ?1, ?2), ?4) AS text)", nativeQuery = true)
+    Optional<User> findByLoginAndPassword(String login, String password, String salt, String algorithm);
 
     Optional<User> findByLogin(String login);
 }

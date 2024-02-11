@@ -9,17 +9,10 @@ import ru.itmo.wp.domain.User;
 import ru.itmo.wp.domain.UserInfo;
 import ru.itmo.wp.form.UserRegisterCredentials;
 import ru.itmo.wp.form.validator.UserCredentialsRegisterValidator;
-import ru.itmo.wp.s3.S3Service;
 import ru.itmo.wp.security.annotations.JWTInterceptor;
-import ru.itmo.wp.service.JwtService;
 import ru.itmo.wp.service.UserService;
 
-import javax.imageio.ImageIO;
 import javax.validation.Valid;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,41 +20,45 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
     private final UserCredentialsRegisterValidator userCredentialsRegisterValidator;
-    private final S3Service s3Service;
 
     @InitBinder("userRegisterCredentials")
     public void initBinder(WebDataBinder binder) {
         binder.addValidators(userCredentialsRegisterValidator);
     }
 
-    @GetMapping("users/auth")
+//    Login and register
+
+    @GetMapping("user/auth")
     @JWTInterceptor
     public User findUserByJwt(@RequestAttribute("_user-interception") User user) {
         return user;
     }
 
-    @GetMapping("users")
-    public List<User> findAllUsers() {
-        return userService.findAll();
+    @PostMapping("user/register")
+    public void registerUser(@Valid @RequestBody UserRegisterCredentials userRegisterCredentials) {
+        userService.register(userRegisterCredentials);
     }
+
+//    Utils
 
     @GetMapping("user")
     public User findUserByLogin(@RequestParam("login") String login) {
-        return userService.findByLogin(login).orElse(null);
-    }
-
-    @PutMapping("user")
-    @JWTInterceptor
-    public void updateUsersInfo(@RequestAttribute("_user-interception") User user,
-                                @RequestParam("name") String name,
-                                @Valid @RequestBody UserInfo info) {
-        userService.updateUser(user, name, info);
+        return userService.findByLogin(login);
     }
 
     @GetMapping("user/avatar")
-    @SneakyThrows
     public String findUserAvatar(@RequestParam("id") Long id) {
-        return s3Service.getAvatarById(id);
+        return userService.findUserAvatar(id);
+    }
+
+//  Update
+
+    @PutMapping("user")
+    @JWTInterceptor
+    public void updateUserInfo(@RequestAttribute("_user-interception") User user,
+                                @RequestParam("name") String name,
+                                @Valid @RequestBody UserInfo info) {
+        userService.updateUser(user, name, info);
     }
 
     @PutMapping("user/avatar")
@@ -69,21 +66,6 @@ public class UserController {
     @SneakyThrows
     public void updateUserAvatar(@RequestAttribute("_user-interception") User user,
                                  @RequestParam("file") MultipartFile image) {
-        BufferedImage imageFile = ImageIO.read(image.getInputStream());
-        if (imageFile.getHeight() != imageFile.getWidth()
-                || imageFile.getWidth() != 120) {
-            return;
-        }
-        System.out.println(imageFile.getHeight());
-        System.out.println(imageFile.getWidth());
-        try {
-            s3Service.updateAvatarById(user.getId(), image.getBytes());
-        } catch (IOException ignored) {
-        }
-    }
-
-    @PostMapping("users")
-    public void registerUser(@Valid @RequestBody UserRegisterCredentials userRegisterCredentials) {
-        userService.register(userRegisterCredentials);
+        userService.updateUserAvatar(user, image);
     }
 }

@@ -1,46 +1,44 @@
 package ru.itmo.wp.controller;
 
-import org.springframework.validation.BindingResult;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.itmo.wp.domain.Comment;
 import ru.itmo.wp.domain.Post;
 import ru.itmo.wp.domain.User;
-import ru.itmo.wp.exception.ValidationException;
-import ru.itmo.wp.exception.ValidationEntityException;
-import ru.itmo.wp.service.JwtService;
+import ru.itmo.wp.security.annotations.JWTInterceptor;
 import ru.itmo.wp.service.PostService;
+import ru.itmo.wp.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/1")
+@RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
-    private final JwtService jwtService;
-
-    public PostController(PostService postService, JwtController jwtController, JwtService jwtService) {
-        this.postService = postService;
-        this.jwtService = jwtService;
-    }
+    private final UserService userService;
 
     @GetMapping("posts")
     public List<Post> findPosts() {
         return postService.findAll();
     }
 
-    @PostMapping("posts")
-    public void writePost(@RequestParam String jwt, @Valid @RequestBody Post post, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            throw new ValidationException(bindingResult);
-        }
+    @GetMapping("posts/{login}")
+    public List<Post> findPostsUser(@PathVariable("login") String login) {
+        return userService.findPostsByUserLogin(login);
+    }
 
-        User user = jwtService.find(jwt);
-        if (user == null) {
-            throw new ValidationEntityException("User", "not found");
-        }
-
+    @PostMapping("post")
+    @JWTInterceptor
+    public void writePost(@RequestAttribute("_user-interception") User user,
+                          @Valid @RequestBody Post post) {
         postService.writePost(post, user);
+    }
+
+    @GetMapping("post/{id}")
+    public Post getPost(@PathVariable Long id) {
+        return postService.find(id);
     }
 
     @PostMapping("/post/{id}")
@@ -58,10 +56,5 @@ public class PostController {
 //            throw new ValidationEntityException("Post", "not found");
 //        }
 //        postService.writeComment(post, user, comment);
-    }
-
-    @GetMapping("post/{id}")
-    public Post getPost(@PathVariable Long id) {
-        return postService.find(id);
     }
 }

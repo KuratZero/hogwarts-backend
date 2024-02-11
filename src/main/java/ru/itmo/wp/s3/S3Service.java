@@ -3,6 +3,7 @@ package ru.itmo.wp.s3;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.itmo.wp.exception.NoSuchResourceException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -13,6 +14,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.time.Duration;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -66,8 +68,9 @@ public class S3Service {
 
     public String getAvatarById(Long id) {
         if (!avatarIsPresent(id)) {
-            return null;
+            throw new NoSuchResourceException("No user avatar found.");
         }
+
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(BUCKET_NAME).key(id.toString()).build();
 
@@ -77,6 +80,8 @@ public class S3Service {
 
         PresignedGetObjectRequest presignedGetObjectRequest = presigner.presignGetObject(getObjectPresignRequest);
 
-        return presignedGetObjectRequest.url().toString();
+        return Optional.ofNullable(
+                presignedGetObjectRequest.url().toString()
+        ).orElseThrow(() -> new NoSuchResourceException("No avatar found."));
     }
 }
