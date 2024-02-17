@@ -1,10 +1,8 @@
 package ru.itmo.wp.controller;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import ru.itmo.wp.domain.User;
 import ru.itmo.wp.domain.UserInfo;
 import ru.itmo.wp.form.UserRegisterCredentials;
@@ -46,11 +44,6 @@ public class UserController {
         return userService.findByLogin(login);
     }
 
-    @GetMapping("user/avatar")
-    public String findUserAvatar(@RequestParam("id") Long id) {
-        return userService.findUserAvatar(id);
-    }
-
 //  Update
 
     @PutMapping("user")
@@ -61,11 +54,4 @@ public class UserController {
         userService.updateUser(user, name, info);
     }
 
-    @PutMapping("user/avatar")
-    @JWTInterceptor
-    @SneakyThrows
-    public void updateUserAvatar(@RequestAttribute("_user-interception") User user,
-                                 @RequestParam("file") MultipartFile image) {
-        userService.updateUserAvatar(user, image);
-    }
 }

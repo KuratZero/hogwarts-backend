@@ -1,18 +1,13 @@
 package ru.itmo.wp.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import net.bytebuddy.implementation.bind.annotation.Default;
+import lombok.Data;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
-@Setter
-@Getter
 @Entity
+@Data
 public class UserInfo {
     @Id
     @Column(name = "user_id")

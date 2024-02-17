@@ -9,11 +9,17 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.itmo.wp.exception.ImageUploadException;
 import ru.itmo.wp.exception.NoSuchResourceException;
+import ru.itmo.wp.exception.SecurityHandlerException;
 
 @RestControllerAdvice
 public class RestControllerExceptionHandler {
+    @ExceptionHandler(SecurityHandlerException.class)
+    public ResponseEntity<String> onSecurityHandlerException(SecurityHandlerException e) {
+        return new ResponseEntity<>("Security error: " + e.getMessage(),
+                new HttpHeaders(), HttpStatus.NOT_ACCEPTABLE);
+    }
+
     @ExceptionHandler(NoSuchResourceException.class)
     public ResponseEntity<String> onNoSuchResourceException(NoSuchResourceException e) {
         return new ResponseEntity<>(e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND);
@@ -23,11 +29,6 @@ public class RestControllerExceptionHandler {
     public ResponseEntity<String> onValidationException(MethodArgumentNotValidException e) {
         String errorMessage = getErrorMessage(e.getBindingResult());
         return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(ImageUploadException.class)
-    public ResponseEntity<String> onImageUploadException(ImageUploadException e) {
-        return new ResponseEntity<>(e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
 
     private static String getErrorMessage(BindingResult bindingResult) {

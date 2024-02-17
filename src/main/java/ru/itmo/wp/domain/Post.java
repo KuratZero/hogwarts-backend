@@ -1,7 +1,6 @@
 package ru.itmo.wp.domain;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
@@ -12,8 +11,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "posts", indexes = @Index(columnList = "creationTime"))
-@Setter
-@Getter
+@Data
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

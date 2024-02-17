@@ -5,9 +5,11 @@ import org.springframework.stereotype.Service;
 import ru.itmo.wp.domain.Comment;
 import ru.itmo.wp.domain.Post;
 import ru.itmo.wp.domain.User;
+import ru.itmo.wp.exception.NoSuchResourceException;
 import ru.itmo.wp.repository.PostRepository;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +34,15 @@ public class PostService {
     }
 
     public Post find(Long id) {
-        return postRepository.findById(id).orElse(null);
+        return postRepository.findById(id)
+                .orElseThrow(() -> new NoSuchResourceException("No such post"));
+    }
+
+    public void delete(User user, Long id) {
+        Post post = find(id);
+        if (!Objects.equals(post.getUser().getId(), user.getId())) {
+            throw new SecurityException();
+        }
+        postRepository.delete(post);
     }
 }

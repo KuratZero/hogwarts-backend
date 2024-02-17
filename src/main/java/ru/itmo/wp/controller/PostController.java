@@ -41,6 +41,13 @@ public class PostController {
         return postService.find(id);
     }
 
+    @DeleteMapping("post/{id}")
+    @JWTInterceptor
+    public void deletePost(@RequestAttribute("_user-interception") User user,
+                           @PathVariable Long id) {
+        postService.delete(user, id);
+    }
+
     @PostMapping("/post/{id}")
     public void writeComment(@PathVariable long id,
                              @Valid @RequestBody Comment comment) {
