@@ -24,16 +24,16 @@ public class PostController {
         return postService.findAll();
     }
 
-    @GetMapping("posts/{login}")
-    public List<Post> findPostsUser(@PathVariable("login") String login) {
-        return userService.findPostsByUserLogin(login);
-    }
-
     @PostMapping("post")
     @JWTInterceptor
     public void writePost(@RequestAttribute("_user-interception") User user,
                           @Valid @RequestBody Post post) {
         postService.writePost(post, user);
+    }
+
+    @GetMapping("posts/{login}")
+    public List<Post> findPostsUser(@PathVariable("login") String login) {
+        return userService.findPostsByUserLogin(login);
     }
 
     @GetMapping("post/{id}")
@@ -49,19 +49,11 @@ public class PostController {
     }
 
     @PostMapping("/post/{id}")
-    public void writeComment(@PathVariable long id,
-                             @Valid @RequestBody Comment comment) {
-//        if(bindingResult.hasErrors()) {
-//            throw new ValidationException(bindingResult);
-//        }
-//        User user = jwtService.find(jwt);
-//        if(user == null) {
-//            throw new ValidationEntityException("User", "not found");
-//        }
-//        Post post = postService.find(id);
-//        if(post == null) {
-//            throw new ValidationEntityException("Post", "not found");
-//        }
-//        postService.writeComment(post, user, comment);
+    @JWTInterceptor
+    public void writeComment(
+            @RequestAttribute("_user-interception") User user,
+            @PathVariable long id,
+            @Valid @RequestBody Comment comment) {
+        postService.writeComment(id, user, comment);
     }
 }

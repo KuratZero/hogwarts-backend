@@ -26,7 +26,9 @@ public class PostService {
         postRepository.save(post);
     }
 
-    public void writeComment(Post post, User user, Comment comment) {
+    public void writeComment(Long id, User user, Comment comment) {
+        Post post = find(id);
+
         comment.setPost(post);
         comment.setUser(user);
         post.getComments().add(comment);

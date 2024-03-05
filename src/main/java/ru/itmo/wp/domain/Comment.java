@@ -17,8 +17,7 @@ public class Comment {
     @Id
     @GeneratedValue
     private long id;
-    
-    @Lob
+
     @NotNull
     @NotBlank
     @Size(min = 1, max = 700)
